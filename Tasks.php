@@ -170,7 +170,11 @@ trait Tasks
 	public function fructifyPermissions()
 	{
 		// These folders will be given full write permissions
-		$folders = ['./wp-content/uploads'];
+		$folders =
+		[
+			'./wp-content/uploads',
+			'./wp-content/fructify/views/cache'
+		];
 
 		// Loop through each folder
 		foreach ($folders as $folder)
