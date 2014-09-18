@@ -142,7 +142,7 @@ trait Tasks
 	public function fructifySalts()
 	{
 		// Grab the salts from the wordpress server
-		$salts = GuzzleHttp\get('https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
+		$salts = \GuzzleHttp\get('https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
 
 		// Create the new .salts.php file
 		$this->taskWriteToFile('.salts.php')->line('<?php')->text($salts)->run();
