@@ -173,7 +173,7 @@ trait Tasks
 		$folders =
 		[
 			'./wp-content/uploads',
-			'./wp-content/fructify/views/cache'
+			'./wp-content/themes/fructify/views/cache'
 		];
 
 		// Loop through each folder
