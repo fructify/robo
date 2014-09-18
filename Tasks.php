@@ -13,10 +13,12 @@
 // -----------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+use Symfony\Component\Finder\Finder;
+
 trait Tasks
 {
 	/**
-	 * Method: wpInstall
+	 * Method: fructifyInstall
 	 * =========================================================================
 	 * This task will download the core wordpress files for you.
 	 * It is automatically run by composer as a post-install-cmd so you
@@ -24,7 +26,7 @@ trait Tasks
 	 * 
 	 * But if you do want to call it, usage would look like:
 	 * 
-	 *     php vendor/bin/robo wp:install v4.*
+	 *     php vendor/bin/robo fructify:install v4.*
 	 * 
 	 * Parameters:
 	 * -------------------------------------------------------------------------
@@ -34,7 +36,7 @@ trait Tasks
 	 * -------------------------------------------------------------------------
 	 * void
 	 */
-	public function wpInstall($version = '*')
+	public function fructifyInstall($version = '*')
 	{
 		// Lets check if wordpress actually exists
 		if (!file_exists('wp-includes/version.php'))
@@ -54,7 +56,7 @@ trait Tasks
 	}
 
 	/**
-	 * Method: wpUpdate
+	 * Method: fructifyUpdate
 	 * =========================================================================
 	 * This task will update the core wordpress files for you.
 	 * It is automatically run by composer as a post-update-cmd so you
@@ -62,7 +64,7 @@ trait Tasks
 	 * 
 	 * But if you do want to call it, usage would look like:
 	 * 
-	 *     php vendor/bin/robo wp:update v4.*
+	 *     php vendor/bin/robo fructify:update v4.*
 	 * 
 	 * Parameters:
 	 * -------------------------------------------------------------------------
@@ -72,7 +74,7 @@ trait Tasks
 	 * -------------------------------------------------------------------------
 	 * void
 	 */
-	public function wpUpdate($version = '*')
+	public function fructifyUpdate($version = '*')
 	{
 		// Lets attempt to update wordpress
 		if (file_exists('wp-includes/version.php'))
@@ -94,7 +96,7 @@ trait Tasks
 			$this->taskExec('vendor/bin/wp core download --version='.$installed_version.' --path='.$old_wp_tmp_path)->run();
 
 			// Now lets delete all the files that are stock wordpress files
-			$finder = new Symfony\Component\Finder\Finder();
+			$finder = new Finder();
 			$finder->files()->in($old_wp_tmp_path);
 			foreach ($finder as $file)
 			{
@@ -115,19 +117,19 @@ trait Tasks
 
 		// Either we just deleted the old wordpress files or it didn't exist.
 		// Regardless lets run the install functionality.
-		$this->wpInstall($version);
+		$this->fructifyInstall($version);
 	}
 
 	/**
-	 * Method: wpSalts
+	 * Method: fructifySalts
 	 * =========================================================================
 	 * This task will create a new set of salts and write them to the
-	 * .salts.php file for you. Again this tied into composer as a
+	 * .salts.php file for you. Again this is tied into composer as a
 	 * post-install-cmd so you really shouldn't need to worry about it.
 	 * 
 	 * But if you do want to call it, usage would look like:
 	 * 
-	 *     php vendor/bin/robo wp:salts
+	 *     php vendor/bin/robo fructify:salts
 	 * 
 	 * Parameters:
 	 * -------------------------------------------------------------------------
@@ -137,7 +139,7 @@ trait Tasks
 	 * -------------------------------------------------------------------------
 	 * void
 	 */
-	public function wpSalts()
+	public function fructifySalts()
 	{
 		// Grab the salts from the wordpress server
 		$salts = GuzzleHttp\get('https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
@@ -147,7 +149,7 @@ trait Tasks
 	}
 
 	/**
-	 * Method: permissionsSet
+	 * Method: fructifyPermissions
 	 * =========================================================================
 	 * This task simply loops through some folders and ensures they exist and
 	 * have the correct permissions. It is automatically run by composer as a
@@ -155,7 +157,7 @@ trait Tasks
 	 * 
 	 * But if you do want to call it, usage would look like:
 	 * 
-	 *     php vendor/bin/robo permissions:set
+	 *     php vendor/bin/robo fructify:permissions
 	 * 
 	 * Parameters:
 	 * -------------------------------------------------------------------------
@@ -165,21 +167,10 @@ trait Tasks
 	 * -------------------------------------------------------------------------
 	 * void
 	 */
-	public function permissionsSet()
+	public function fructifyPermissions()
 	{
-		// These folders will be give full write permissions
-		$folders =
-		[
-			// Wordpress likes to have write access to the entire wp-content
-			// folder. I don't like this. And will only provide access to
-			// the uploads folder.
-			'./wp-content/uploads',
-
-			// This is for AssetMini
-			'./assets/cache'
-
-			// Feel free to add your own folder here...
-		];
+		// These folders will be given full write permissions
+		$folders = ['./wp-content/uploads'];
 
 		// Loop through each folder
 		foreach ($folders as $folder)
@@ -217,7 +208,7 @@ trait Tasks
 		if ($version_string != '*' && strpos($version_string, '*') !== false)
 		{
 			// Download a list of all the wordpress versions
-			$html = GuzzleHttp\get('http://wordpress.org/download/release-archive/')->getBody();
+			$html = \GuzzleHttp\get('http://wordpress.org/download/release-archive/')->getBody();
 
 			// Extract the version numbers
 			preg_match_all("#><a href='http://wordpress.org/wordpress-[^>]+#", $html, $matches);
@@ -249,7 +240,7 @@ trait Tasks
 		elseif ($version_string == '*')
 		{
 			// Get the latest version
-			return GuzzleHttp\get('http://api.wordpress.org/core/version-check/1.7/')->json()['offers'][0]['version'];
+			return \GuzzleHttp\get('http://api.wordpress.org/core/version-check/1.7/')->json()['offers'][0]['version'];
 		}
 		else
 		{
