@@ -7,7 +7,7 @@
 	"require":
 	{
 		"symfony/finder": "*",
-		"guzzlehttp/guzzle": "*",
+		"guzzlehttp/guzzle": "4.*",
 		"gears/asset": "*"
 	},
 	"autoload":
