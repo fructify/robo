@@ -13,10 +13,14 @@
 // -----------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+use Gears\Asset;
 use Symfony\Component\Finder\Finder;
 
 trait Tasks
 {
+	// Import the gears asset management trait
+	use Asset;
+
 	/**
 	 * Method: fructifyInstall
 	 * =========================================================================
