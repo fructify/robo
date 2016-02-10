@@ -1,19 +1,20 @@
 <?php namespace Fructify\Robo;
 ////////////////////////////////////////////////////////////////////////////////
-//             ___________                     __   __  _____                   
-//             \_   _____/______ __ __   _____/  |_|__|/ ____\__ __             
-//              |    __) \_  __ \  |  \_/ ___\   __\  \   __<   |  |            
-//              |     \   |  | \/  |  /\  \___|  | |  ||  |  \___  |            
-//              \___  /   |__|  |____/  \___  >__| |__||__|  / ____|            
-//                  \/                      \/               \/                 
+//             ___________                     __   __  _____
+//             \_   _____/______ __ __   _____/  |_|__|/ ____\__ __
+//              |    __) \_  __ \  |  \_/ ___\   __\  \   __<   |  |
+//              |     \   |  | \/  |  /\  \___|  | |  ||  |  \___  |
+//              \___  /   |__|  |____/  \___  >__| |__||__|  / ____|
+//                  \/                      \/               \/
 // -----------------------------------------------------------------------------
-//                          https://github.com/fructify                         
-//                                                                              
-//          Designed and Developed by Brad Jones <brad @="bjc.id.au" />         
+//                          https://github.com/fructify
+//
+//          Designed and Developed by Brad Jones <brad @="bjc.id.au" />
 // -----------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 use Gears\Asset;
+use GuzzleHttp\Client as Http;
 use Symfony\Component\Finder\Finder;
 
 trait Tasks
@@ -27,15 +28,15 @@ trait Tasks
 	 * This task will download the core wordpress files for you.
 	 * It is automatically run by composer as a post-install-cmd so you
 	 * really shouldn't need to worry about it.
-	 * 
+	 *
 	 * But if you do want to call it, usage would look like:
-	 * 
+	 *
 	 *     php vendor/bin/robo fructify:install v4.*
-	 * 
+	 *
 	 * Parameters:
 	 * -------------------------------------------------------------------------
 	 * $version - This is optional, defaults to the latest version of wordpress.
-	 * 
+	 *
 	 * Returns:
 	 * -------------------------------------------------------------------------
 	 * void
@@ -65,15 +66,15 @@ trait Tasks
 	 * This task will update the core wordpress files for you.
 	 * It is automatically run by composer as a post-update-cmd so you
 	 * really shouldn't need to worry about it.
-	 * 
+	 *
 	 * But if you do want to call it, usage would look like:
-	 * 
+	 *
 	 *     php vendor/bin/robo fructify:update v4.*
-	 * 
+	 *
 	 * Parameters:
 	 * -------------------------------------------------------------------------
 	 * $version - This is optional, defaults to the latest version of wordpress.
-	 * 
+	 *
 	 * Returns:
 	 * -------------------------------------------------------------------------
 	 * void
@@ -130,15 +131,15 @@ trait Tasks
 	 * This task will create a new set of salts and write them to the
 	 * .salts.php file for you. Again this is tied into composer as a
 	 * post-install-cmd so you really shouldn't need to worry about it.
-	 * 
+	 *
 	 * But if you do want to call it, usage would look like:
-	 * 
+	 *
 	 *     php vendor/bin/robo fructify:salts
-	 * 
+	 *
 	 * Parameters:
 	 * -------------------------------------------------------------------------
 	 * n/a
-	 * 
+	 *
 	 * Returns:
 	 * -------------------------------------------------------------------------
 	 * void
@@ -146,7 +147,7 @@ trait Tasks
 	public function fructifySalts()
 	{
 		// Grab the salts from the wordpress server
-		$salts = \GuzzleHttp\get('https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
+		$salts = new Http()->request('GET', 'https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
 
 		// Create the new .salts.php file
 		$this->taskWriteToFile('.salts.php')->line('<?php')->text($salts)->run();
@@ -158,15 +159,15 @@ trait Tasks
 	 * This task simply loops through some folders and ensures they exist and
 	 * have the correct permissions. It is automatically run by composer as a
 	 * post-install-cmd so you really shouldn't need to worry about it.
-	 * 
+	 *
 	 * But if you do want to call it, usage would look like:
-	 * 
+	 *
 	 *     php vendor/bin/robo fructify:permissions
-	 * 
+	 *
 	 * Parameters:
 	 * -------------------------------------------------------------------------
 	 * n/a
-	 * 
+	 *
 	 * Returns:
 	 * -------------------------------------------------------------------------
 	 * void
@@ -197,11 +198,11 @@ trait Tasks
 	 * wild card characters (*) and resolves the actual version number.
 	 * We use this page: http://wordpress.org/download/release-archive/
 	 * As an offical list of released versions.
-	 * 
+	 *
 	 * Parameters:
 	 * -------------------------------------------------------------------------
 	 * $version_string - A string with a version like: v1.5.*
-	 * 
+	 *
 	 * Returns:
 	 * -------------------------------------------------------------------------
 	 * void
@@ -216,17 +217,17 @@ trait Tasks
 		if ($version_string != '*' && strpos($version_string, '*') !== false)
 		{
 			// Download a list of all the wordpress versions
-			$html = \GuzzleHttp\get('http://wordpress.org/download/release-archive/')->getBody();
+			$html = new Http()->request('GET', 'http://wordpress.org/download/release-archive/')->getBody();
 
 			// Extract the version numbers
 			preg_match_all("#><a href='http://wordpress.org/wordpress-[^>]+#", $html, $matches);
-			
+
 			foreach ($matches[0] as $match)
 			{
 				if (strpos($match, '.zip') !== false)
 				{
 					$result = str_replace(["><a href='http://wordpress.org/wordpress-", ".zip'"], '', $match);
-					
+
 					// We don't want any of the alpha, beta or rc releases
 					if (strpos($result, '-') === false)
 					{
@@ -248,7 +249,7 @@ trait Tasks
 		elseif ($version_string == '*')
 		{
 			// Get the latest version
-			return \GuzzleHttp\get('http://api.wordpress.org/core/version-check/1.7/')->json()['offers'][0]['version'];
+			return json_decode(new Http()->request('GET', 'http://api.wordpress.org/core/version-check/1.7/')->getBody(), true)['offers'][0]['version'];
 		}
 		else
 		{
