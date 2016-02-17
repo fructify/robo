@@ -177,8 +177,7 @@ trait Tasks
 		// These folders will be given full write permissions
 		$folders =
 		[
-			'./wp-content/uploads',
-			'./wp-content/themes/fructify/views/cache'
+			'./wp-content/uploads'
 		];
 
 		// Loop through each folder
