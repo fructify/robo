@@ -147,7 +147,7 @@ trait Tasks
 	public function fructifySalts()
 	{
 		// Grab the salts from the wordpress server
-		$salts = new Http()->request('GET', 'https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
+		$salts = (new Http)->request('GET', 'https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
 
 		// Create the new .salts.php file
 		$this->taskWriteToFile('.salts.php')->line('<?php')->text($salts)->run();
@@ -217,7 +217,7 @@ trait Tasks
 		if ($version_string != '*' && strpos($version_string, '*') !== false)
 		{
 			// Download a list of all the wordpress versions
-			$html = new Http()->request('GET', 'http://wordpress.org/download/release-archive/')->getBody();
+			$html = (new Http)->request('GET', 'http://wordpress.org/download/release-archive/')->getBody();
 
 			// Extract the version numbers
 			preg_match_all("#><a href='http://wordpress.org/wordpress-[^>]+#", $html, $matches);
@@ -249,7 +249,7 @@ trait Tasks
 		elseif ($version_string == '*')
 		{
 			// Get the latest version
-			return json_decode(new Http()->request('GET', 'http://api.wordpress.org/core/version-check/1.7/')->getBody(), true)['offers'][0]['version'];
+			return json_decode((new Http)->request('GET', 'http://api.wordpress.org/core/version-check/1.7/')->getBody(), true)['offers'][0]['version'];
 		}
 		else
 		{
