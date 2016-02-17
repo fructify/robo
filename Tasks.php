@@ -219,13 +219,13 @@ trait Tasks
 			$html = (new Http)->request('GET', 'http://wordpress.org/download/release-archive/')->getBody();
 
 			// Extract the version numbers
-			preg_match_all("#><a href='http://wordpress.org/wordpress-[^>]+#", $html, $matches);
+			preg_match_all("#><a href='https://wordpress.org/wordpress-[^>]+#", $html, $matches);
 
 			foreach ($matches[0] as $match)
 			{
 				if (strpos($match, '.zip') !== false)
 				{
-					$result = str_replace(["><a href='http://wordpress.org/wordpress-", ".zip'"], '', $match);
+					$result = str_replace(["><a href='https://wordpress.org/wordpress-", ".zip'"], '', $match);
 
 					// We don't want any of the alpha, beta or rc releases
 					if (strpos($result, '-') === false)
@@ -233,6 +233,9 @@ trait Tasks
 						// Now search for the latest version number
 						$pattern = preg_quote($version_string, '#');
 						$pattern = str_replace('\*', '.*', $pattern).'\z';
+
+						// TODO: We need to use the composer semver comparator
+						// here. As 4.* matches 4.0 but not 4.4.2 for example.
 
 						if (preg_match('#^'.$pattern.'#', $result))
 						{
