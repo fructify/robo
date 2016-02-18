@@ -6,9 +6,11 @@
 	"license": "MIT",
 	"require":
 	{
-		"symfony/finder": "*",
-		"guzzlehttp/guzzle": "~6.0",
-		"gears/asset": "*"
+		"composer/semver": "^1.2",
+		"guzzlehttp/guzzle": "^6.0",
+		"symfony/finder": "^2.0|^3.0",
+		"athari/yalinqo": "^2.4",
+		"danielstjules/stringy": "^2.2"
 	},
 	"autoload":
 	{

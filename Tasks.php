@@ -13,44 +13,49 @@
 // -----------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-use Gears\Asset;
+use Composer\Semver\Semver;
 use GuzzleHttp\Client as Http;
+use YaLinqo\Enumerable as Linq;
+use function Stringy\create as s;
 use Symfony\Component\Finder\Finder;
 
 trait Tasks
 {
-	// Import the gears asset management trait
-	use Asset;
+	/** @var string */
+	const WP_SALTS_URL = 'https://api.wordpress.org/secret-key/1.1/salt/';
+
+	/** @var string */
+	const WP_VERSION_URL = 'https://api.wordpress.org/core/version-check/1.7/';
+
+	/** @var string */
+	const WP_RELEASES_URL = 'https://wordpress.org/download/release-archive/';
 
 	/**
-	 * Method: fructifyInstall
-	 * =========================================================================
-	 * This task will download the core wordpress files for you.
-	 * It is automatically run by composer as a post-install-cmd so you
-	 * really shouldn't need to worry about it.
+	 * Installs Wordpress.
+	 *
+	 * This task will download the core wordpress files for you. It is
+	 * automatically run by composer as a post-install-cmd so you really
+	 * shouldn't need to worry about it.
 	 *
 	 * But if you do want to call it, usage would look like:
 	 *
-	 *     php vendor/bin/robo fructify:install v4.*
+	 * ```
+	 * 	php vendor/bin/robo fructify:install v4.*
+	 * ```
 	 *
-	 * Parameters:
-	 * -------------------------------------------------------------------------
-	 * $version - This is optional, defaults to the latest version of wordpress.
-	 *
-	 * Returns:
-	 * -------------------------------------------------------------------------
-	 * void
+	 * @param  string $versionContraint A semantic version contraint.
+	 * @return void
 	 */
-	public function fructifyInstall($version = '*')
+	public function fructifyInstall($versionContraint = '*')
 	{
 		// Lets check if wordpress actually exists
 		if (!file_exists('wp-includes/version.php'))
 		{
 			// Grab the resolved version number
-			$version = $this->wpResolveVersionNo($version);
+			$version = $this->wpResolveVersionNo($versionContraint);
 
 			// Download the core wordpress files
-			$this->taskExec('vendor/bin/wp core download --version='.$version)->run();
+			$this->_exec('vendor/bin/wp core download --version='.$version);
 
 			// Remove a few things we don't need
 			@unlink('license.txt');
@@ -61,25 +66,22 @@ trait Tasks
 	}
 
 	/**
-	 * Method: fructifyUpdate
-	 * =========================================================================
-	 * This task will update the core wordpress files for you.
-	 * It is automatically run by composer as a post-update-cmd so you
-	 * really shouldn't need to worry about it.
+	 * Updates Wordpress.
+	 *
+	 * This task will update the core wordpress files for you. It is
+	 * automatically run by composer as a post-update-cmd so you really
+	 * shouldn't need to worry about it.
 	 *
 	 * But if you do want to call it, usage would look like:
 	 *
-	 *     php vendor/bin/robo fructify:update v4.*
+	 * ```
+	 * 	php vendor/bin/robo fructify:update v4.*
+	 * ```
 	 *
-	 * Parameters:
-	 * -------------------------------------------------------------------------
-	 * $version - This is optional, defaults to the latest version of wordpress.
-	 *
-	 * Returns:
-	 * -------------------------------------------------------------------------
-	 * void
+	 * @param  string $versionContraint A semantic version contraint.
+	 * @return void
 	 */
-	public function fructifyUpdate($version = '*')
+	public function fructifyUpdate($versionContraint = '*')
 	{
 		// Lets attempt to update wordpress
 		if (file_exists('wp-includes/version.php'))
@@ -89,20 +91,25 @@ trait Tasks
 			$installed_version = $wp_version;
 
 			// Get the version we want to update to
-			$new_version = $this->wpResolveVersionNo($version);
+			$new_version = $this->wpResolveVersionNo($versionContraint);
 
 			// Nothing to do, same version.
 			if ($installed_version == $new_version) return;
 
 			// Now lets download the version of wordpress that we already have,
 			// sounds silly I know but it will make sense soon I promise.
-			$old_wp_tmp_path = sys_get_temp_dir().'/'.md5(microtime());
-			$this->taskExec('mkdir '.$old_wp_tmp_path)->run();
-			$this->taskExec('vendor/bin/wp core download --version='.$installed_version.' --path='.$old_wp_tmp_path)->run();
+			$temp = sys_get_temp_dir().'/'.md5(microtime());
+			$this->_mkdir($temp);
+			$this->_exec
+			(
+				'vendor/bin/wp core download'.
+				' --version='.$installed_version.
+				' --path='.$temp
+			);
 
 			// Now lets delete all the files that are stock wordpress files
 			$finder = new Finder();
-			$finder->files()->in($old_wp_tmp_path);
+			$finder->files()->in($temp);
 			foreach ($finder as $file)
 			{
 				if (file_exists($file->getRelativePathname()))
@@ -111,66 +118,52 @@ trait Tasks
 				}
 			}
 
-			// Delete the wp-includes and wp-admin folders
-			// If you have made modifications here, its time to refactor :)
-			$this->taskDeleteDir('./wp-admin')->run();
-			$this->taskDeleteDir('./wp-includes')->run();
-
 			// Clean up
-			$this->taskDeleteDir($old_wp_tmp_path)->run();
+			$this->_deleteDir(['./wp-admin', './wp-includes', $temp]);
 		}
 
 		// Either we just deleted the old wordpress files or it didn't exist.
 		// Regardless lets run the install functionality.
-		$this->fructifyInstall($version);
+		$this->fructifyInstall($versionContraint);
 	}
 
 	/**
-	 * Method: fructifySalts
-	 * =========================================================================
+	 * Creates New Salts, used for encryption by Wordpress.
+	 *
 	 * This task will create a new set of salts and write them to the
 	 * .salts.php file for you. Again this is tied into composer as a
 	 * post-install-cmd so you really shouldn't need to worry about it.
 	 *
 	 * But if you do want to call it, usage would look like:
 	 *
-	 *     php vendor/bin/robo fructify:salts
+	 * ```
+	 * 	php vendor/bin/robo fructify:salts
+	 * ```
 	 *
-	 * Parameters:
-	 * -------------------------------------------------------------------------
-	 * n/a
-	 *
-	 * Returns:
-	 * -------------------------------------------------------------------------
-	 * void
+	 * @return void
 	 */
 	public function fructifySalts()
 	{
-		// Grab the salts from the wordpress server
-		$salts = (new Http)->request('GET', 'https://api.wordpress.org/secret-key/1.1/salt/')->getBody();
-
-		// Create the new .salts.php file
-		$this->taskWriteToFile('.salts.php')->line('<?php')->text($salts)->run();
+		$this->taskWriteToFile('.salts.php')
+			->line('<?php')
+			->text((new Http)->request('GET', self::WP_SALTS_URL)->getBody())
+			->run();
 	}
 
 	/**
-	 * Method: fructifyPermissions
-	 * =========================================================================
+	 * Sets permissions on "special" Wordpress folders.
+	 *
 	 * This task simply loops through some folders and ensures they exist and
 	 * have the correct permissions. It is automatically run by composer as a
 	 * post-install-cmd so you really shouldn't need to worry about it.
 	 *
 	 * But if you do want to call it, usage would look like:
 	 *
-	 *     php vendor/bin/robo fructify:permissions
+	 * ```
+	 * 	php vendor/bin/robo fructify:permissions
+	 * ```
 	 *
-	 * Parameters:
-	 * -------------------------------------------------------------------------
-	 * n/a
-	 *
-	 * Returns:
-	 * -------------------------------------------------------------------------
-	 * void
+	 * @return void
 	 */
 	public function fructifyPermissions()
 	{
@@ -191,72 +184,57 @@ trait Tasks
 	}
 
 	/**
-	 * Method: wpResolveVersionNo
-	 * =========================================================================
-	 * This is a private helper method. It takes a version string with
-	 * wild card characters (*) and resolves the actual version number.
+	 * Resolves a Wordpress Version Contraint.
+	 *
+	 * This is a private helper method. It takes a semantic version contraint,
+	 * parsable by [Composer's Semver](https://github.com/composer/semver) and
+	 * resolves an actual wordpress version number.
+	 *
 	 * We use this page: http://wordpress.org/download/release-archive/
 	 * As an offical list of released versions.
 	 *
-	 * Parameters:
-	 * -------------------------------------------------------------------------
-	 * $version_string - A string with a version like: v1.5.*
-	 *
-	 * Returns:
-	 * -------------------------------------------------------------------------
-	 * void
+	 * @param  string $versionContraint A semantic version contraint.
+	 * @return string 					A semantic version number.
 	 */
-	private function wpResolveVersionNo($version_string)
+	private function wpResolveVersionNo($versionContraint)
 	{
 		// Remove a v at the start if it exists
-		$version_string = str_replace('v', '', $version_string);
+		$versionContraint = str_replace('v', '', $versionContraint);
 
-		// Make sure the wordpress version string
-		// contains wildcards but is not a single wildcard
-		if ($version_string != '*' && strpos($version_string, '*') !== false)
+		// If the constraint it a single wildcard, lets just
+		// return the latest stable release of wordpress.
+		if ($versionContraint == '*')
 		{
-			// Download a list of all the wordpress versions
-			$html = (new Http)->request('GET', 'http://wordpress.org/download/release-archive/')->getBody();
-
-			// Extract the version numbers
-			preg_match_all("#><a href='https://wordpress.org/wordpress-[^>]+#", $html, $matches);
-
-			foreach ($matches[0] as $match)
-			{
-				if (strpos($match, '.zip') !== false)
-				{
-					$result = str_replace(["><a href='https://wordpress.org/wordpress-", ".zip'"], '', $match);
-
-					// We don't want any of the alpha, beta or rc releases
-					if (strpos($result, '-') === false)
-					{
-						// Now search for the latest version number
-						$pattern = preg_quote($version_string, '#');
-						$pattern = str_replace('\*', '.*', $pattern).'\z';
-
-						// TODO: We need to use the composer semver comparator
-						// here. As 4.* matches 4.0 but not 4.4.2 for example.
-
-						if (preg_match('#^'.$pattern.'#', $result))
-						{
-							$version = $result;
-						}
-					}
-				}
-			}
-
-			// Return the last version we found
-			return $version;
+			$json = (new Http)->request('GET', self::WP_VERSION_URL)->getBody();
+			return json_decode($json, true)['offers'][0]['version'];
 		}
-		elseif ($version_string == '*')
+
+		// Download the releases from the wordpress site.
+		$html = (new Http)->request('GET', self::WP_RELEASES_URL)->getBody();
+
+		// Extract a list of download links, these contain the versions.
+		preg_match_all("#><a href='https://wordpress\.org/wordpress-[^>]+#",
+			$html, $matches
+		);
+
+		// Filter the links to obtain a list of just versions
+		$versions = Linq::from($matches[0])
+		->where(function($v){ return s($v)->endsWith(".zip'"); })
+		->where(function($v){ return !s($v)->contains('IIS'); })
+		->where(function($v){ return !s($v)->contains('mu'); })
+		->select(function($v){ return s($v)->between('wordpress-', '.zip'); })
+		->where(function($v)
 		{
-			// Get the latest version
-			return json_decode((new Http)->request('GET', 'http://api.wordpress.org/core/version-check/1.7/')->getBody(), true)['offers'][0]['version'];
-		}
-		else
-		{
-			// No wildcards so assume the version is accurate
-			return $version_string;
-		}
+		    if ($v->contains('-'))
+		    {
+		        return preg_match("#.*-(dev|beta|alpha|rc).*#i", $v) === 1;
+		    }
+
+		    return true;
+		})
+		->toArray();
+
+		// Let semver take over and work it's magic
+		return (string) Semver::satisfiedBy($versions, $versionContraint)[0];
 	}
 }
