@@ -22,13 +22,13 @@ use Symfony\Component\Finder\Finder;
 trait Tasks
 {
 	/** @var string */
-	const WP_SALTS_URL = 'https://api.wordpress.org/secret-key/1.1/salt/';
+	private static $WP_SALTS_URL = 'https://api.wordpress.org/secret-key/1.1/salt/';
 
 	/** @var string */
-	const WP_VERSION_URL = 'https://api.wordpress.org/core/version-check/1.7/';
+	private static $WP_VERSION_URL = 'https://api.wordpress.org/core/version-check/1.7/';
 
 	/** @var string */
-	const WP_RELEASES_URL = 'https://wordpress.org/download/release-archive/';
+	private static $WP_RELEASES_URL = 'https://wordpress.org/download/release-archive/';
 
 	/**
 	 * Installs Wordpress.
@@ -146,7 +146,7 @@ trait Tasks
 	{
 		$this->taskWriteToFile('.salts.php')
 			->line('<?php')
-			->text((new Http)->request('GET', self::WP_SALTS_URL)->getBody())
+			->text((new Http)->request('GET', self::$WP_SALTS_URL)->getBody())
 			->run();
 	}
 
@@ -205,12 +205,12 @@ trait Tasks
 		// return the latest stable release of wordpress.
 		if ($versionContraint == '*')
 		{
-			$json = (new Http)->request('GET', self::WP_VERSION_URL)->getBody();
+			$json = (new Http)->request('GET', self::$WP_VERSION_URL)->getBody();
 			return json_decode($json, true)['offers'][0]['version'];
 		}
 
 		// Download the releases from the wordpress site.
-		$html = (new Http)->request('GET', self::WP_RELEASES_URL)->getBody();
+		$html = (new Http)->request('GET', self::$WP_RELEASES_URL)->getBody();
 
 		// Extract a list of download links, these contain the versions.
 		preg_match_all("#><a href='https://wordpress\.org/wordpress-[^>]+#",
