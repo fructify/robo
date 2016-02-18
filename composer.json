@@ -6,7 +6,7 @@
 	"license": "MIT",
 	"require":
 	{
-		"composer/semver": "^1.2",
+		"composer/semver": "^1.0",
 		"guzzlehttp/guzzle": "^6.0",
 		"symfony/finder": "^2.0|^3.0",
 		"athari/yalinqo": "^2.4",
