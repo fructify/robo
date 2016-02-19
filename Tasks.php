@@ -70,7 +70,7 @@ trait Tasks
 
 			if (!$composer->contains('wpackagist-plugin/akismet'))
 			{
-				$this->_deleteDir(['./wp-content/akismet']);
+				$this->_deleteDir(['./wp-content/plugins/akismet']);
 			}
 
 			if (!$composer->contains('wpackagist-theme/twentysixteen'))
