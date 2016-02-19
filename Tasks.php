@@ -49,18 +49,18 @@ trait Tasks
 	public function fructifyInstall($versionContraint = '*')
 	{
 		// Lets check if wordpress actually exists
-		if (!file_exists('wp-includes/version.php'))
+		if (!file_exists('./wp-includes/version.php'))
 		{
 			// Grab the resolved version number
 			$version = $this->wpResolveVersionNo($versionContraint);
 
 			// Download the core wordpress files
-			$this->_exec('vendor/bin/wp core download --version='.$version);
+			$this->_exec('./vendor/bin/wp core download --version='.$version);
 
 			// Remove a few things we don't need
-			@unlink('license.txt');
-			@unlink('readme.html');
-			@unlink('wp-config-sample.php');
+			@unlink('./license.txt');
+			@unlink('./readme.html');
+			@unlink('./wp-config-sample.php');
 			@unlink('./wp-content/plugins/hello.php');
 
 			// Read in the composer file and remove some of the bundled plugins
@@ -70,22 +70,22 @@ trait Tasks
 
 			if (!$composer->contains('wpackagist-plugin/akismet'))
 			{
-				$this->_deleteDir(['/wp-content/akismet']);
+				$this->_deleteDir(['./wp-content/akismet']);
 			}
 
 			if (!$composer->contains('wpackagist-theme/twentysixteen'))
 			{
-				$this->_deleteDir(['/wp-content/themes/twentysixteen']);
+				$this->_deleteDir(['./wp-content/themes/twentysixteen']);
 			}
 
 			if (!$composer->contains('wpackagist-theme/twentyfifteen'))
 			{
-				$this->_deleteDir(['/wp-content/themes/twentyfifteen']);
+				$this->_deleteDir(['./wp-content/themes/twentyfifteen']);
 			}
 
 			if (!$composer->contains('wpackagist-theme/twentyfourteen'))
 			{
-				$this->_deleteDir(['/wp-content/themes/twentyfourteen']);
+				$this->_deleteDir(['./wp-content/themes/twentyfourteen']);
 			}
 		}
 	}
@@ -109,10 +109,10 @@ trait Tasks
 	public function fructifyUpdate($versionContraint = '*')
 	{
 		// Lets attempt to update wordpress
-		if (file_exists('wp-includes/version.php'))
+		if (file_exists('./wp-includes/version.php'))
 		{
 			// Grab the version of wordpress that is installed
-			require('wp-includes/version.php');
+			require('./wp-includes/version.php');
 			$installed_version = $wp_version;
 
 			// Get the version we want to update to
@@ -127,7 +127,7 @@ trait Tasks
 			$this->_mkdir($temp);
 			$this->_exec
 			(
-				'vendor/bin/wp core download'.
+				'./vendor/bin/wp core download'.
 				' --version='.$installed_version.
 				' --path='.$temp
 			);
@@ -169,7 +169,7 @@ trait Tasks
 	 */
 	public function fructifySalts()
 	{
-		$this->taskWriteToFile('.salts.php')
+		$this->taskWriteToFile('./.salts.php')
 			->line('<?php')
 			->text((new Http)->request('GET', self::$WP_SALTS_URL)->getBody())
 			->run();
