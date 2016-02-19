@@ -13,10 +13,10 @@
 // -----------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+use Stringy\Stringy as s;
 use Composer\Semver\Semver;
 use GuzzleHttp\Client as Http;
 use YaLinqo\Enumerable as Linq;
-use function Stringy\create as s;
 use Symfony\Component\Finder\Finder;
 
 trait Tasks
@@ -62,6 +62,31 @@ trait Tasks
 			@unlink('readme.html');
 			@unlink('wp-config-sample.php');
 			@unlink('./wp-content/plugins/hello.php');
+
+			// Read in the composer file and remove some of the bundled plugins
+			// and themes unless of course they are actually referenced in the
+			// composer requirements.
+			$composer = s::create(file_get_contents('./composer.json'));
+
+			if (!$composer->contains('wpackagist-plugin/akismet'))
+			{
+				$this->_deleteDir(['/wp-content/akismet']);
+			}
+
+			if (!$composer->contains('wpackagist-theme/twentysixteen'))
+			{
+				$this->_deleteDir(['/wp-content/themes/twentysixteen']);
+			}
+
+			if (!$composer->contains('wpackagist-theme/twentyfifteen'))
+			{
+				$this->_deleteDir(['/wp-content/themes/twentyfifteen']);
+			}
+
+			if (!$composer->contains('wpackagist-theme/twentyfourteen'))
+			{
+				$this->_deleteDir(['/wp-content/themes/twentyfourteen']);
+			}
 		}
 	}
 
@@ -219,10 +244,11 @@ trait Tasks
 
 		// Filter the links to obtain a list of just versions
 		$versions = Linq::from($matches[0])
-		->where(function($v){ return s($v)->endsWith(".zip'"); })
-		->where(function($v){ return !s($v)->contains('IIS'); })
-		->where(function($v){ return !s($v)->contains('mu'); })
-		->select(function($v){ return s($v)->between('wordpress-', '.zip'); })
+		->select(function($v){ return s::create($v); })
+		->where(function($v){ return $v->endsWith(".zip'"); })
+		->where(function($v){ return !$v->contains('IIS'); })
+		->where(function($v){ return !$v->contains('mu'); })
+		->select(function($v){ return $v->between('wordpress-', '.zip'); })
 		->where(function($v)
 		{
 		    if ($v->contains('-'))
