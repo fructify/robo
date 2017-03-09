@@ -1,22 +1,22 @@
 {
-	"name": "fructify/robo",
-	"description": "Custom Robo Tasks for the main project https://github.com/fructify/wordpress",
-	"homepage": "https://github.com/fructify/robo",
-	"keywords": ["fructify", "robo", "tasks", "wordpress"],
-	"license": "MIT",
-	"require":
-	{
-		"composer/semver": "^1.0",
-		"guzzlehttp/guzzle": "^6.0",
-		"symfony/finder": "^2.0|^3.0",
-		"athari/yalinqo": "^2.4",
-		"danielstjules/stringy": "^2.2"
-	},
-	"autoload":
-	{
-		"psr-4":
-		{
-			"Fructify\\Robo\\": ""
-		}
-	}
+    "name": "fructify/robo",
+    "description": "Custom Robo Tasks for the main project https://github.com/fructify/wordpress",
+    "homepage": "https://github.com/fructify/robo",
+    "keywords": ["fructify", "robo", "tasks", "wordpress"],
+    "license": "MIT",
+    "require":
+    {
+        "composer/semver": "^1.0",
+        "guzzlehttp/guzzle": "^6.0",
+        "symfony/finder": "^2.0|^3.0",
+        "athari/yalinqo": "^2.4",
+        "danielstjules/stringy": "^2.2"
+    },
+    "autoload":
+    {
+        "psr-4":
+        {
+            "Fructify\\Robo\\": ""
+        }
+    }
 }
