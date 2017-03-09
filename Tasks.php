@@ -48,7 +48,7 @@ trait Tasks
      * @param  string $versionContraint A semantic version contraint.
      * @return void
      */
-    public function fructifyInstall($versionContraint = '*')
+    public function fructifyInstall(string $versionContraint = '*')
     {
         // Lets check if wordpress actually exists
         if (!file_exists('./wp-includes/version.php'))
@@ -108,7 +108,7 @@ trait Tasks
      * @param  string $versionContraint A semantic version contraint.
      * @return void
      */
-    public function fructifyUpdate($versionContraint = '*')
+    public function fructifyUpdate(string $versionContraint = '*')
     {
         // Lets attempt to update wordpress
         if (file_exists('./wp-includes/version.php'))
@@ -223,7 +223,7 @@ trait Tasks
      * @param  string $versionContraint A semantic version contraint.
      * @return string 					A semantic version number.
      */
-    private function wpResolveVersionNo($versionContraint)
+    private function wpResolveVersionNo(string $versionContraint)
     {
         // Remove a v at the start if it exists
         $versionContraint = str_replace('v', '', $versionContraint);
