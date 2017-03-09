@@ -15,7 +15,7 @@
 
 namespace Fructify\Robo;
 
-use Stringy\Stringy as s;
+use Gears\String\Str;
 use Composer\Semver\Semver;
 use GuzzleHttp\Client as Http;
 use YaLinqo\Enumerable as Linq;
@@ -68,7 +68,7 @@ trait Tasks
             // Read in the composer file and remove some of the bundled plugins
             // and themes unless of course they are actually referenced in the
             // composer requirements.
-            $composer = s::create(file_get_contents('./composer.json'));
+            $composer = Str::s(file_get_contents('./composer.json'));
 
             if (!$composer->contains('wpackagist-plugin/akismet'))
             {
@@ -246,12 +246,12 @@ trait Tasks
 
         // Filter the links to obtain a list of just versions
         $versions = Linq::from($matches[0])
-        ->select(function($v){ return s::create($v); })
-        ->where(function($v){ return $v->endsWith(".zip'"); })
-        ->where(function($v){ return !$v->contains('IIS'); })
-        ->where(function($v){ return !$v->contains('mu'); })
-        ->select(function($v){ return $v->between('wordpress-', '.zip'); })
-        ->where(function($v)
+        ->select(function(string $v){ return Str::s($v); })
+        ->where(function(Str $v){ return $v->endsWith(".zip'"); })
+        ->where(function(Str $v){ return !$v->contains('IIS'); })
+        ->where(function(Str $v){ return !$v->contains('mu'); })
+        ->select(function(Str $v){ return $v->between('wordpress-', '.zip'); })
+        ->where(function(Str $v)
         {
             if ($v->contains('-'))
             {
