@@ -75,6 +75,11 @@ class Tasks extends \Robo\Tasks
                 $this->_deleteDir(['./wp-content/plugins/akismet']);
             }
 
+            if (!$composer->contains('wpackagist-theme/twentyseventeen'))
+            {
+                $this->_deleteDir(['./wp-content/themes/twentyseventeen']);
+            }
+
             if (!$composer->contains('wpackagist-theme/twentysixteen'))
             {
                 $this->_deleteDir(['./wp-content/themes/twentysixteen']);
@@ -237,7 +242,7 @@ class Tasks extends \Robo\Tasks
         }
 
         // Download the releases from the wordpress site.
-        $html = (new Http)->request('GET', self::$WP_RELEASES_URL)->getBody();
+        $html = (new Http)->request('GET', self::$WP_RELEASES_URL)->getBody()->getContents();
 
         // Extract a list of download links, these contain the versions.
         preg_match_all("#><a href='https://wordpress\.org/wordpress-[^>]+#",
@@ -255,7 +260,7 @@ class Tasks extends \Robo\Tasks
         {
             if ($v->contains('-'))
             {
-                return preg_match("#.*-(dev|beta|alpha|rc).*#i", $v) === 1;
+                return preg_match("#.*-(dev|beta|alpha|rc).*#i", (string)$v) === 1;
             }
 
             return true;
