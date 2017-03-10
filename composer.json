@@ -6,6 +6,7 @@
     "license": "MIT",
     "require":
     {
+        "consolidation/robo": "^1.0.0",
         "composer/semver": "^1.0",
         "guzzlehttp/guzzle": "^6.0",
         "symfony/finder": "^2.0|^3.0",

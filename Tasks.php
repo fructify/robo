@@ -21,7 +21,7 @@ use GuzzleHttp\Client as Http;
 use YaLinqo\Enumerable as Linq;
 use Symfony\Component\Finder\Finder;
 
-trait Tasks
+class Tasks extends \Robo\Tasks
 {
     /** @var string */
     private static $WP_SALTS_URL = 'https://api.wordpress.org/secret-key/1.1/salt/';
