@@ -42,7 +42,7 @@ class Tasks extends \Robo\Tasks
      * But if you do want to call it, usage would look like:
      *
      * ```
-     * 	php vendor/bin/robo fructify:install v4.*
+     * ./robo fructify:install v4.*
      * ```
      *
      * @param  string $versionContraint A semantic version contraint.
@@ -107,7 +107,7 @@ class Tasks extends \Robo\Tasks
      * But if you do want to call it, usage would look like:
      *
      * ```
-     * 	php vendor/bin/robo fructify:update v4.*
+     * ./robo fructify:update v4.*
      * ```
      *
      * @param  string $versionContraint A semantic version contraint.
@@ -169,7 +169,7 @@ class Tasks extends \Robo\Tasks
      * But if you do want to call it, usage would look like:
      *
      * ```
-     * 	php vendor/bin/robo fructify:salts
+     * ./robo fructify:salts
      * ```
      *
      * @return void
@@ -192,7 +192,7 @@ class Tasks extends \Robo\Tasks
      * But if you do want to call it, usage would look like:
      *
      * ```
-     * 	php vendor/bin/robo fructify:permissions
+     * ./robo fructify:permissions
      * ```
      *
      * @return void
